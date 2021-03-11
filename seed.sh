@@ -13,3 +13,4 @@ python3 manage.py loaddata paymenttypes
 python3 manage.py loaddata properties
 python3 manage.py loaddata payments
 python3 manage.py loaddata tenantpropertyrel
+
