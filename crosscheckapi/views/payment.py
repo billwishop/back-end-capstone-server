@@ -47,6 +47,19 @@ class Payments(ViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    def retrieve(self, request, pk=None):
+        """Handle GET requests for single payment
+        Returns:
+            Response -- JSON serialized payment instance
+        """
+        try:
+            payment = Payment.objects.get(pk=pk)
+            serializer = PaymentSerializer(
+                payment, context={'request': request})
+            return Response(serializer.data)
+        except Exception as ex:
+            return HttpResponseServerError(ex, status=status.HTTP_404_NOT_FOUND)
+
     def update(self, request, pk=None):
         """Handle PUT requests for payments
         Returns:
