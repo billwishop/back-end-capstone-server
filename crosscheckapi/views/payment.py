@@ -60,6 +60,20 @@ class Payments(ViewSet):
         except Exception as ex:
             return HttpResponseServerError(ex, status=status.HTTP_404_NOT_FOUND)
 
+    def list(self, request):
+        """Handle GET requests to payments resource
+        Returns:
+            Response -- JSON serialized list of tenants
+        """
+        payments = Payment.objects.all()
+        landlord = Landlord.objects.get(user=request.auth.user)
+        current_users_payments = Payment.objects.filter(landlord=landlord)
+
+        serializer = PaymentSerializer(
+            current_users_payments, many=True, context={'request': request})
+
+        return Response(serializer.data)
+
     def update(self, request, pk=None):
         """Handle PUT requests for payments
         Returns:
