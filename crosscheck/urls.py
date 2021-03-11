@@ -2,11 +2,12 @@ from django.conf.urls import include
 from django.urls import path
 from rest_framework import routers
 from crosscheckapi.views import register_user, login_user
-from crosscheckapi.views import Tenants, Payments
+from crosscheckapi.views import Tenants, Payments, Properties
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'tenants', Tenants, 'tenant')
 router.register(r'payments', Payments, 'payment')
+router.register(r'properties', Properties, 'property')
 
 urlpatterns = [
     path('', include(router.urls)),
