@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
-from crosscheckapi.models import Property, Landlord, Payment, PaymentType, TenantPropertyRel
+from crosscheckapi.models import Property, Tenant, Landlord, Payment, PaymentType, TenantPropertyRel
 
 class Properties(ViewSet):
     """Cross Check Properties"""
@@ -96,6 +96,33 @@ class Properties(ViewSet):
 
         except Exception as ex:
             return Response({'message': ex.args[0]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(methods=['post', 'delete'], detail=True)
+    def lease(self, request, pk=None):
+        """Managing leases between properties and tenants"""
+
+        # A landlord is creating a lease 
+        if request.method == "POST":
+            tenant = Tenant.objects.get(pk=request.data["tenant"])
+            rented_property = Property.objects.get(pk=pk)
+
+            lease = TenantPropertyRel()
+            lease.lease_start = request.data["lease_start"]
+            lease.lease_end = request.data["lease_end"]
+            lease.rent = request.data["rent"]
+            lease.tenant = tenant
+            lease.rented_property = rented_property
+            lease.save()
+
+            return Response({}, status=status.HTTP_201_CREATED)
+
+        # Delete lease
+        elif request.method == "DELETE":
+            lease = TenantPropertyRel.objects.get(pk = request.data["lease_id"])
+            lease.delete()
+
+            return Response({}, status=status.HTTP_204_NO_CONTENT)
+
 
 class PropertySerializer(serializers.ModelSerializer):
     """JSON serializer for properties"""
