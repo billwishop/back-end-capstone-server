@@ -63,7 +63,7 @@ class Payments(ViewSet):
     def list(self, request):
         """Handle GET requests to payments resource
         Returns:
-            Response -- JSON serialized list of tenants
+            Response -- JSON serialized list of payments
         """
         payments = Payment.objects.all()
         landlord = Landlord.objects.get(user=request.auth.user)
@@ -130,3 +130,4 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = ('id', 'date', 'amount',
                     'ref_num', 'tenant', 
                     'payment_type')
+        depth=2
