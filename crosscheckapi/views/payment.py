@@ -75,13 +75,20 @@ class Payments(ViewSet):
         # Allows the user to search by ref_num or name
         # using the same search input.
         keyword = self.request.query_params.get('keyword', None)
-
         if keyword is not None:
-            print(keyword)
             payments = payments.filter(ref_num__icontains=keyword
                         ) | payments.filter(tenant__first_name__icontains=keyword
                         ) | payments.filter(tenant__last_name__icontains=keyword
                         ) | payments.filter(tenant__middle_initial__icontains=keyword)
+
+        # Date range query parameter
+        # Check for the parameter to distinguigh the fetch
+        # Use the values sent in the body for the range
+        date_range = self.request.query_params.get('date', None)
+        if date_range is not None:
+            d1 = request.data["startDate"]
+            d2 = request.data["endDate"]
+            payments = payments.filter(date__range=(d1,d2))
 
         serializer = PaymentSerializer(
             payments, many=True, context={'request': request})
