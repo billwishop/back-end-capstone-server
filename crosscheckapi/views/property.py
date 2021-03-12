@@ -71,7 +71,6 @@ class Properties(ViewSet):
         Returns:
             Response -- JSON serialized list of properties
         """
-        properties = Property.objects.all()           
         landlord = Landlord.objects.get(user=request.auth.user)
         current_users_properties = Property.objects.filter(landlord=landlord)
 

@@ -30,8 +30,11 @@ class Payments(ViewSet):
         # Find the associated lease to assign the property 
         # rather than having the user select both the 
         # tenant and property
-        lease = TenantPropertyRel.objects.get(tenant=request.data["tenant"])
-        payment.rented_property = lease.rented_property
+        try:
+            lease = TenantPropertyRel.objects.get(tenant=request.data["tenant"])
+            payment.rented_property = lease.rented_property
+        except TenantPropertyRel.DoesNotExist:
+            payment.rented_property = None
         
         # Retrieve the payment type and attach a 
         # Payment Type instance to the payment
@@ -65,12 +68,23 @@ class Payments(ViewSet):
         Returns:
             Response -- JSON serialized list of payments
         """
-        payments = Payment.objects.all()
         landlord = Landlord.objects.get(user=request.auth.user)
-        current_users_payments = Payment.objects.filter(landlord=landlord)
+        payments = Payment.objects.filter(landlord=landlord)
+
+        # Search keyword query parameter.
+        # Allows the user to search by ref_num or name
+        # using the same search input.
+        keyword = self.request.query_params.get('keyword', None)
+
+        if keyword is not None:
+            print(keyword)
+            payments = payments.filter(ref_num__icontains=keyword
+                        ) | payments.filter(tenant__first_name__icontains=keyword
+                        ) | payments.filter(tenant__last_name__icontains=keyword
+                        ) | payments.filter(tenant__middle_initial__icontains=keyword)
 
         serializer = PaymentSerializer(
-            current_users_payments, many=True, context={'request': request})
+            payments, many=True, context={'request': request})
 
         return Response(serializer.data)
 
