@@ -1,5 +1,5 @@
 [FORMAT]
-good-names=i,j,ex,pk
+good-names=i,j,ex,pk, d1, d2
 
 [MESSAGES CONTROL]
 disable=broad-except
