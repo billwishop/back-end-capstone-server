@@ -7,6 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
+from datetime import date
+from datetime import datetime
 from crosscheckapi.models import Property, Tenant, Landlord, Payment, PaymentType, TenantPropertyRel
 
 class Properties(ViewSet):
@@ -41,7 +43,24 @@ class Properties(ViewSet):
         """
         try:
             rental = Property.objects.get(pk=pk)
-            serializer = PropertySerializer(
+
+            # Find the associated leases and attach them to the custom property `lease`
+            try:
+                leases = TenantPropertyRel.objects.filter(rented_property=pk)
+
+                # Set the custom property `active` based on the lease date range
+                current_day = date.today()
+                for lease in leases:
+                    if current_day > lease.lease_start and current_day < lease.lease_end:
+                        lease.active = True
+                    else: 
+                        lease.active = False
+                rental.lease = leases
+
+            except TenantPropertyRel.DoesNotExist:
+                rental.lease = None
+
+            serializer = LeasedPropertySerializer(
                 rental, context={'request': request})
             return Response(serializer.data)
         except Exception as ex:
@@ -52,7 +71,7 @@ class Properties(ViewSet):
         Returns:
             Response -- JSON serialized list of properties
         """
-        properties = Property.objects.all()
+        properties = Property.objects.all()           
         landlord = Landlord.objects.get(user=request.auth.user)
         current_users_properties = Property.objects.filter(landlord=landlord)
 
@@ -123,6 +142,21 @@ class Properties(ViewSet):
 
             return Response({}, status=status.HTTP_204_NO_CONTENT)
 
+
+class LeaseSerializer(serializers.ModelSerializer):
+    """JSON serializer for leases"""
+    class Meta:
+        model = TenantPropertyRel
+        fields = ('id', 'lease_start', 'lease_end', 'rent', 'tenant', 'active')
+        depth = 2
+
+class LeasedPropertySerializer(serializers.ModelSerializer):
+    """JSON serializer for individual properties with the associated leases"""
+    lease = LeaseSerializer(many=True)
+    class Meta:
+        model = Property
+        fields = ('id', 'street', 'city', 
+        'state', 'postal_code', 'landlord', 'lease')
 
 class PropertySerializer(serializers.ModelSerializer):
     """JSON serializer for properties"""
