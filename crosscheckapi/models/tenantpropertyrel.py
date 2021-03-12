@@ -6,3 +6,11 @@ class TenantPropertyRel(models.Model):
     rent = models.IntegerField()
     tenant = models.ForeignKey("Tenant", on_delete=models.CASCADE)
     rented_property = models.ForeignKey("Property", on_delete=models.CASCADE)
+
+    @property
+    def active(self):
+        return self.__active
+
+    @active.setter
+    def active(self, value):
+        self.__active = value
