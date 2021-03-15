@@ -11,6 +11,7 @@ from datetime import date
 from datetime import datetime
 from crosscheckapi.models import Property, Tenant, Landlord, Payment, PaymentType, TenantPropertyRel
 
+
 class Properties(ViewSet):
     """Cross Check Properties"""
 
