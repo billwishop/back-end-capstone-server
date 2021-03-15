@@ -20,7 +20,7 @@ def login_user(request):
     # If the request is POST, try to pull out the relevant info.
     if request.method == 'POST':
 
-        # Built-in authenticate method 
+        # Built-in authenticate method
         username = req_body['username']
         password = req_body['password']
         authenticated_user = authenticate(username=username, password=password)

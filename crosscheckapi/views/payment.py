@@ -27,8 +27,8 @@ class Payments(ViewSet):
         payment.ref_num = request.data["ref_num"]
         payment.tenant = tenant
 
-        # Find the associated lease to assign the property 
-        # rather than having the user select both the 
+        # Find the associated lease to assign the property
+        # rather than having the user select both the
         # tenant and property
         try:
             lease = TenantPropertyRel.objects.get(tenant=request.data["tenant"])
@@ -41,7 +41,7 @@ class Payments(ViewSet):
         payment_type = PaymentType.objects.get(pk=request.data["payment_type"])
         payment.payment_type = payment_type
 
-        payment.landlord = landlord 
+        payment.landlord = landlord
         payment.save()
 
         serializer = PaymentSerializer(
@@ -110,8 +110,8 @@ class Payments(ViewSet):
         payment.ref_num = request.data["ref_num"]
         payment.tenant = tenant
 
-        # Find the associated lease to assign the property 
-        # rather than having the user select both the 
+        # Find the associated lease to assign the property
+        # rather than having the user select both the
         # tenant and property
         lease = TenantPropertyRel.objects.get(tenant=request.data["tenant"])
         payment.rented_property = lease.rented_property
@@ -121,7 +121,7 @@ class Payments(ViewSet):
         payment_type = PaymentType.objects.get(pk=request.data["payment_type"])
         payment.payment_type = payment_type
 
-        payment.landlord = landlord 
+        payment.landlord = landlord
         payment.save()
 
         return Response({}, status=status.HTTP_204_NO_CONTENT)

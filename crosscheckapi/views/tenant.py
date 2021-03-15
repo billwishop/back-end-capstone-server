@@ -23,9 +23,13 @@ class Tenants(ViewSet):
         tenant.phone_number = request.data["phone_number"]
         tenant.email = request.data["email"]
         tenant.first_name = request.data["first_name"]
-        tenant.middle_initial = request.data["middle_initial"]
         tenant.last_name = request.data["last_name"]
         tenant.landlord = landlord
+
+        try:
+            tenant.middle_initial = request.data["middle_initial"]
+        except KeyError:
+            tenant.middle_initial = None
 
         try:
             tenant.save()
