@@ -8,7 +8,10 @@ class Tenant(models.Model):
     last_name = models.CharField(max_length=50)
     landlord = models.ForeignKey("Landlord", on_delete=models.CASCADE)
 
-    # @property
-    # def full_name(self):
-    #     "Returned the person's full name."
-    #     return '%s %s' % (self.first_name, self.middle_initial, self.last_name)
+    @property
+    def full_name(self):
+        return self.__full_name
+
+    @full_name.setter
+    def full_name(self, value):
+        self.__full_name = value

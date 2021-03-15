@@ -46,6 +46,12 @@ class Tenants(ViewSet):
 
         try: 
             tenant = Tenant.objects.get(pk=pk)
+
+            if tenant.middle_initial is not None:
+                tenant.full_name = tenant.first_name + ' ' + tenant.middle_initial + ' ' + tenant.last_name
+            else:
+                tenant.full_name = tenant.first_name + ' ' + tenant.last_name
+
             serializer = TenantSerializer(tenant, context={'request': request})
             return Response(serializer.data)
         except Exception as ex:
@@ -91,9 +97,14 @@ class Tenants(ViewSet):
         Returns:
             Response -- JSON serialized list of tenants
         """
-        tenants = Tenant.objects.all()
         landlord = Landlord.objects.get(user=request.auth.user)
         current_users_tenants = Tenant.objects.filter(landlord=landlord)
+
+        for tenant in current_users_tenants:
+                    if tenant.middle_initial is not None:
+                        tenant.full_name = tenant.first_name + ' ' + tenant.middle_initial + ' ' + tenant.last_name
+                    else:
+                        tenant.full_name = tenant.first_name + ' ' + tenant.last_name
 
         serializer = TenantSerializer(
             current_users_tenants, many=True, context={'request': request}
@@ -107,5 +118,4 @@ class TenantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
         fields = ('id', 'phone_number', 'email',
-                    'first_name', 'middle_initial',
-                    'last_name', 'landlord')
+                    'landlord', 'full_name')
