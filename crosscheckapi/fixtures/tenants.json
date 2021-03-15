@@ -5,9 +5,7 @@
         "fields": {
             "phone_number": "(555)555-5555",
             "email": "tenant@tenant.com",
-            "first_name": "Fox",
-            "middle_initial": "G",
-            "last_name": "Mulder",
+            "full_name": "Fox Mulder",
             "landlord": 1
         }
     },
@@ -17,9 +15,7 @@
         "fields": {
             "phone_number": "(555)555-5555",
             "email": "tenant@tenant.com",
-            "first_name": "Dana",
-            "middle_initial": "F",
-            "last_name": "Scully",
+            "full_name": "Dana Scully",
             "landlord": 1
         }
     },
@@ -29,9 +25,7 @@
         "fields": {
             "phone_number": "(555)555-5555",
             "email": "tenant@tenant.com",
-            "first_name": "Walter",
-            "middle_initial": "P",
-            "last_name": "Skinner",
+            "full_name": "Walter P Skinner",
             "landlord": 2
         }
     }

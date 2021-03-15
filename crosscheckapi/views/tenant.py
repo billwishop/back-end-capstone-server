@@ -22,14 +22,9 @@ class Tenants(ViewSet):
         tenant = Tenant()
         tenant.phone_number = request.data["phone_number"]
         tenant.email = request.data["email"]
-        tenant.first_name = request.data["first_name"]
-        tenant.last_name = request.data["last_name"]
+        tenant.full_name = request.data["full_name"]
         tenant.landlord = landlord
 
-        try:
-            tenant.middle_initial = request.data["middle_initial"]
-        except KeyError:
-            tenant.middle_initial = None
 
         try:
             tenant.save()
@@ -47,11 +42,6 @@ class Tenants(ViewSet):
         try: 
             tenant = Tenant.objects.get(pk=pk)
 
-            if tenant.middle_initial is not None:
-                tenant.full_name = tenant.first_name + ' ' + tenant.middle_initial + ' ' + tenant.last_name
-            else:
-                tenant.full_name = tenant.first_name + ' ' + tenant.last_name
-
             serializer = TenantSerializer(tenant, context={'request': request})
             return Response(serializer.data)
         except Exception as ex:
@@ -67,9 +57,7 @@ class Tenants(ViewSet):
         tenant = Tenant.objects.get(pk=pk)
         tenant.phone_number = request.data["phone_number"]
         tenant.email = request.data["email"]
-        tenant.first_name = request.data["first_name"]
-        tenant.middle_initial = request.data["middle_initial"]
-        tenant.last_name = request.data["last_name"]
+        tenant.full_name = request.data["full_name"]
         tenant.landlord = landlord
         tenant.save()
 
@@ -99,12 +87,6 @@ class Tenants(ViewSet):
         """
         landlord = Landlord.objects.get(user=request.auth.user)
         current_users_tenants = Tenant.objects.filter(landlord=landlord)
-
-        for tenant in current_users_tenants:
-                    if tenant.middle_initial is not None:
-                        tenant.full_name = tenant.first_name + ' ' + tenant.middle_initial + ' ' + tenant.last_name
-                    else:
-                        tenant.full_name = tenant.first_name + ' ' + tenant.last_name
 
         serializer = TenantSerializer(
             current_users_tenants, many=True, context={'request': request}

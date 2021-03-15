@@ -8,6 +8,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
 from crosscheckapi.models import Tenant, Landlord, Payment, PaymentType, TenantPropertyRel
+from .tenant import TenantSerializer
 
 class Payments(ViewSet):
     """ Cross Check payments """
@@ -57,6 +58,7 @@ class Payments(ViewSet):
         """
         try:
             payment = Payment.objects.get(pk=pk)
+
             serializer = PaymentSerializer(
                 payment, context={'request': request})
             return Response(serializer.data)
@@ -77,9 +79,7 @@ class Payments(ViewSet):
         keyword = self.request.query_params.get('keyword', None)
         if keyword is not None:
             payments = payments.filter(ref_num__icontains=keyword
-                        ) | payments.filter(tenant__first_name__icontains=keyword
-                        ) | payments.filter(tenant__last_name__icontains=keyword
-                        ) | payments.filter(tenant__middle_initial__icontains=keyword)
+                        ) | payments.filter(tenant__full_name__icontains=keyword) 
 
         # Date range query parameter
         # Check for the parameter to distinguigh the fetch
@@ -146,6 +146,7 @@ class Payments(ViewSet):
 
 class PaymentSerializer(serializers.ModelSerializer):
     """JSON serializer for payments"""
+    tenant = TenantSerializer(many=False)
     class Meta:
         model = Payment
         fields = ('id', 'date', 'amount',
