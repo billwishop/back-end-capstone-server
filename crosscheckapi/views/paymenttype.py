@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import serializers
 from crosscheckapi.models import PaymentType
+import json
 
 class PaymentTypes(ViewSet):
     """ Cross Check PaymentTypes """
@@ -16,10 +17,15 @@ class PaymentTypes(ViewSet):
         """
         payment_types = PaymentType.objects.all()
 
-        serializer = PaymentTypeSerializer(
-            payment_types, many=True, context={'request': request})
+        # The table on the front end requires a specific data structure
+        # {id: label, id: label, etc.}
+        pt_obj = {}
+        for pt in payment_types:
+            pt_obj[pt.id] = pt.label
 
-        return Response(serializer.data)
+        pt_obj_string = json.dumps(pt_obj, separators=None)
+
+        return Response(pt_obj_string)
 
 class PaymentTypeSerializer(serializers.ModelSerializer):
     """JSON serializer for payment_types"""

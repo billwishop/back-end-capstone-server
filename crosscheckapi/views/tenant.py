@@ -8,6 +8,7 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
 from crosscheckapi.models import Tenant, Landlord
+import json
 
 class Tenants(ViewSet):
     """Cross Check tenants"""
@@ -88,6 +89,17 @@ class Tenants(ViewSet):
         landlord = Landlord.objects.get(user=request.auth.user)
         current_users_tenants = Tenant.objects.filter(landlord=landlord)
 
+        table = self.request.query_params.get('table', None)
+
+        if table is not None:
+            tenant_obj = {}
+            for tenant in current_users_tenants:
+                tenant_obj[tenant.id] = tenant.full_name
+            
+            to_string = json.dumps(tenant_obj, separators=None)
+
+            return Response(to_string)
+        
         serializer = TenantSerializer(
             current_users_tenants, many=True, context={'request': request}
         )
