@@ -8,7 +8,6 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
 from crosscheckapi.models import Tenant, Landlord, Payment, PaymentType, TenantPropertyRel
-from .tenant import TenantSerializer
 
 class Payments(ViewSet):
     """ Cross Check payments """
@@ -143,6 +142,13 @@ class Payments(ViewSet):
         except Exception as ex:
             return Response({'message': ex.args[0]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class TenantSerializer(serializers.ModelSerializer):
+    """JSON serializer for tenants"""
+    
+    class Meta:
+        model = Tenant
+        fields = ('id', 'phone_number', 'email',
+                    'landlord', 'full_name')
 
 class PaymentSerializer(serializers.ModelSerializer):
     """JSON serializer for payments"""

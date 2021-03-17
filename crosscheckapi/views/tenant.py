@@ -122,6 +122,13 @@ class Tenants(ViewSet):
 
             return Response(to_string)
 
+        search_term = self.request.query_params.get('search', None)
+        if search_term is not None:
+            current_users_tenants = current_users_tenants.filter(phone_number__icontains=search_term
+                ) | current_users_tenants.filter(email__icontains=search_term
+                ) | current_users_tenants.filter(full_name__icontains=search_term
+                ) 
+
         # Connect rented properties to tenants through the relationship table
         try:
             for tenant in current_users_tenants:
@@ -156,7 +163,7 @@ class LeaseSerializer(serializers.ModelSerializer):
     """JSON serializer for leases"""
     class Meta:
         model = TenantPropertyRel
-        fields = ('id', 'lease_start', 'lease_end', 'rent', 'tenant', 'active')
+        fields = ('id', 'lease_start', 'lease_end', 'rent', 'rented_property', 'active')
         depth = 1
 
 class TenantSerializer(serializers.ModelSerializer):
