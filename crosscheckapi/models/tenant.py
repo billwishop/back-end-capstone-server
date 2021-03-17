@@ -6,3 +6,10 @@ class Tenant(models.Model):
     full_name = models.CharField(max_length=150)
     landlord = models.ForeignKey("Landlord", on_delete=models.CASCADE)
 
+    @property
+    def rented_property(self):
+        return self.__rented_property
+
+    @rented_property.setter
+    def rented_property(self, value):
+        self.__rented_property = value
