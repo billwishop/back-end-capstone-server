@@ -7,8 +7,10 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
-from crosscheckapi.models import Tenant, Landlord
+from crosscheckapi.models import Tenant, Landlord, TenantPropertyRel
 import json
+from datetime import date
+from datetime import datetime
 
 class Tenants(ViewSet):
     """Cross Check tenants"""
@@ -42,6 +44,25 @@ class Tenants(ViewSet):
 
         try: 
             tenant = Tenant.objects.get(pk=pk)
+
+            try:
+                rented_property = TenantPropertyRel.objects.filter(tenant=pk)
+                tenant.rented_property = rented_property
+            except TenantPropertyRel.DoesNotExist:
+                tenant.rented_property = None
+
+            # Check if the lease is active and add a custom property
+            current_day = date.today()
+            for rp in tenant.rented_property:
+                if current_day > rp.lease_start and current_day < rp.lease_end:
+                    rp.active = True
+                else: 
+                    rp.active = False         
+
+            # If the tenant does not have a lease, null will be
+            # returned rather than an empty array
+            if not tenant.rented_property:
+                    tenant.rented_property = None   
 
             serializer = TenantSerializer(tenant, context={'request': request})
             return Response(serializer.data)
@@ -89,8 +110,9 @@ class Tenants(ViewSet):
         landlord = Landlord.objects.get(user=request.auth.user)
         current_users_tenants = Tenant.objects.filter(landlord=landlord)
 
+        # The table on the front end requires an object where the
+        # id's are keys and names are values
         table = self.request.query_params.get('table', None)
-
         if table is not None:
             tenant_obj = {}
             for tenant in current_users_tenants:
@@ -99,6 +121,29 @@ class Tenants(ViewSet):
             to_string = json.dumps(tenant_obj, separators=None)
 
             return Response(to_string)
+
+        # Connect rented properties to tenants through the relationship table
+        try:
+            for tenant in current_users_tenants:
+                lease = TenantPropertyRel.objects.filter(tenant=tenant)
+                tenant.rented_property = lease
+
+                # Check if the lease is active and add a custom property
+                current_day = date.today()
+                for rp in tenant.rented_property:
+                    if current_day > rp.lease_start and current_day < rp.lease_end:
+                        rp.active = True
+                    else: 
+                        rp.active = False
+
+        except TenantPropertyRel.DoesNotExist:
+            current_users_tenants.rented_property = None
+
+        # If the tenant does not have a lease, null will be 
+        # returned rather than an empty array
+        for tenant in current_users_tenants:
+            if not tenant.rented_property:
+                    tenant.rented_property = None
         
         serializer = TenantSerializer(
             current_users_tenants, many=True, context={'request': request}
@@ -106,10 +151,18 @@ class Tenants(ViewSet):
         return Response(serializer.data)
 
 
+
+class LeaseSerializer(serializers.ModelSerializer):
+    """JSON serializer for leases"""
+    class Meta:
+        model = TenantPropertyRel
+        fields = ('id', 'lease_start', 'lease_end', 'rent', 'tenant', 'active')
+        depth = 1
+
 class TenantSerializer(serializers.ModelSerializer):
     """JSON serializer for tenants"""
-
+    rented_property = LeaseSerializer(many=True)
     class Meta:
         model = Tenant
         fields = ('id', 'phone_number', 'email',
-                    'landlord', 'full_name')
+                    'landlord', 'full_name', 'rented_property')
