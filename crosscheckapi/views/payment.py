@@ -7,6 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers
+from datetime import datetime
+import operator
 from crosscheckapi.models import Tenant, Landlord, Payment, PaymentType, TenantPropertyRel
 
 class Payments(ViewSet):
@@ -19,26 +21,44 @@ class Payments(ViewSet):
         """
         # landlord = authenticated user
         landlord = Landlord.objects.get(user=request.auth.user)
-        tenant = Tenant.objects.get(pk=request.data["tenant"])
-
+        tenant_id = int(request.data["full_name"])
+        tenant = Tenant.objects.get(pk=tenant_id )
         payment = Payment()
-        payment.date = request.data["date"]
-        payment.amount = request.data["amount"]
+
+        # Splitting the datetime string on the T to save the date
+        date_string_list = request.data["date"].split('T')
+        date = date_string_list[0]
+        payment.date = date
+
+        # This field is looking for an integer.
+        # If the user includes a $, the string will
+        # split, be converted to an integer and saved
+        try:
+            payment.amount = int(request.data["amount"])
+        except ValueError:
+            amount_string_list = request.data["amount"].split('$')
+            print(amount_string_list)
+            float_amount = float(amount_string_list[1])
+            print(float_amount)
+            amount = int(float_amount)
+            print(amount)
+            payment.amount = amount
+        
         payment.ref_num = request.data["ref_num"]
         payment.tenant = tenant
 
         # Find the associated lease to assign the property
         # rather than having the user select both the
         # tenant and property
-        try:
-            lease = TenantPropertyRel.objects.get(tenant=request.data["tenant"])
-            payment.rented_property = lease.rented_property
-        except TenantPropertyRel.DoesNotExist:
-            payment.rented_property = None
+        # try:
+        #     lease = TenantPropertyRel.objects.get(tenant=int(request.data["full_name"]))
+        #     payment.rented_property = lease.rented_property
+        # except TenantPropertyRel.DoesNotExist:
+        #     payment.rented_property = None
         
-        # Retrieve the payment type and attach a 
+        # Retrieve the payment type and attach a
         # Payment Type instance to the payment
-        payment_type = PaymentType.objects.get(pk=request.data["payment_type"])
+        payment_type = PaymentType.objects.get(pk=int(request.data["type"]))
         payment.payment_type = payment_type
 
         payment.landlord = landlord
@@ -70,8 +90,11 @@ class Payments(ViewSet):
             Response -- JSON serialized list of payments
         """
         landlord = Landlord.objects.get(user=request.auth.user)
-        payments = Payment.objects.filter(landlord=landlord)
+        users_payments = Payment.objects.filter(landlord=landlord)
 
+        # Sort the payments by date starting with the most recent
+        payments = sorted(users_payments, key=operator.attrgetter('date'), reverse=True)
+        
         # Search keyword query parameter.
         # Allows the user to search by ref_num or name
         # using the same search input.
