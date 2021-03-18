@@ -27,7 +27,7 @@ class Tenants(ViewSet):
         tenant.email = request.data["email"]
         tenant.full_name = request.data["full_name"]
         tenant.landlord = landlord
-
+        tenant.rented_property = None
 
         try:
             tenant.save()
