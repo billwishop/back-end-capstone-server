@@ -36,13 +36,15 @@ class Payments(ViewSet):
         try:
             payment.amount = int(request.data["amount"])
         except ValueError:
-            amount_string_list = request.data["amount"].split('$')
-            print(amount_string_list)
-            float_amount = float(amount_string_list[1])
-            print(float_amount)
-            amount = int(float_amount)
-            print(amount)
-            payment.amount = amount
+            try:
+                amount_string_list = request.data["amount"].split('$')
+                float_amount = float(amount_string_list[1])
+                amount = int(float_amount)
+                payment.amount = amount
+            except IndexError:
+                float_amount = float(request.data["amount"])
+                amount = int(float_amount)
+                payment.amount = amount
         
         payment.ref_num = request.data["ref_num"]
         payment.tenant = tenant
@@ -124,23 +126,43 @@ class Payments(ViewSet):
         """
         # landlord = authenticated user
         landlord = Landlord.objects.get(user=request.auth.user)
-        tenant = Tenant.objects.get(pk=request.data["tenant"])
+        tenant = Tenant.objects.get(pk=request.data["full_name"])
 
         payment = Payment.objects.get(pk=pk)
-        payment.date = request.data["date"]
-        payment.amount = request.data["amount"]
+
+        # Splitting the datetime string on the T to save the date
+        date_string_list = request.data["date"].split('T')
+        date = date_string_list[0]
+        payment.date = date
+
+        # This field is looking for an integer.
+        # If the user includes a $, the string will
+        # split, be converted to an integer and saved
+        try:
+            payment.amount = int(request.data["amount"])
+        except ValueError:
+            try:
+                amount_string_list = request.data["amount"].split('$')
+                float_amount = float(amount_string_list[1])
+                amount = int(float_amount)
+                payment.amount = amount
+            except IndexError:
+                float_amount = float(request.data["amount"])
+                amount = int(float_amount)
+                payment.amount = amount
+
         payment.ref_num = request.data["ref_num"]
         payment.tenant = tenant
 
         # Find the associated lease to assign the property
         # rather than having the user select both the
         # tenant and property
-        lease = TenantPropertyRel.objects.get(tenant=request.data["tenant"])
-        payment.rented_property = lease.rented_property
+        # lease = TenantPropertyRel.objects.get(tenant=request.data["full_name"])
+        # payment.rented_property = lease.rented_property
         
         # Retrieve the payment type and attach a 
         # Payment Type instance to the payment
-        payment_type = PaymentType.objects.get(pk=request.data["payment_type"])
+        payment_type = PaymentType.objects.get(pk=request.data["type"])
         payment.payment_type = payment_type
 
         payment.landlord = landlord
