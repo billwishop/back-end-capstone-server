@@ -92,10 +92,7 @@ class Payments(ViewSet):
             Response -- JSON serialized list of payments
         """
         landlord = Landlord.objects.get(user=request.auth.user)
-        users_payments = Payment.objects.filter(landlord=landlord)
-
-        # Sort the payments by date starting with the most recent
-        payments = sorted(users_payments, key=operator.attrgetter('date'), reverse=True)
+        payments = Payment.objects.filter(landlord=landlord)
         
         # Search keyword query parameter.
         # Allows the user to search by ref_num or name
@@ -114,8 +111,16 @@ class Payments(ViewSet):
             d2 = request.data["endDate"]
             payments = payments.filter(date__range=(d1,d2))
 
+        # Specific tenant query parameter
+        chosen_tenant = self.request.query_params.get('tenant', None)
+        if chosen_tenant is not None:
+            payments = payments.filter(tenant__id=int(chosen_tenant))
+
+        # Sort the payments by date starting with the most recent
+        sorted_payments = sorted(payments, key=operator.attrgetter('date'), reverse=True)
+
         serializer = PaymentSerializer(
-            payments, many=True, context={'request': request})
+            sorted_payments, many=True, context={'request': request})
 
         return Response(serializer.data)
 
