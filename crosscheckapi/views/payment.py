@@ -21,7 +21,7 @@ class Payments(ViewSet):
         """
         # landlord = authenticated user
         landlord = Landlord.objects.get(user=request.auth.user)
-        tenant_id = int(request.data["full_name"])
+        tenant_id = int(request.data["tenant_id"])
         tenant = Tenant.objects.get(pk=tenant_id )
         payment = Payment()
 
@@ -53,7 +53,7 @@ class Payments(ViewSet):
         # rather than having the user select both the
         # tenant and property
         # try:
-        #     lease = TenantPropertyRel.objects.get(tenant=int(request.data["full_name"]))
+        #     lease = TenantPropertyRel.objects.get(tenant=int(request.data["tenant_id"]))
         #     payment.rented_property = lease.rented_property
         # except TenantPropertyRel.DoesNotExist:
         #     payment.rented_property = None
@@ -131,7 +131,7 @@ class Payments(ViewSet):
         """
         # landlord = authenticated user
         landlord = Landlord.objects.get(user=request.auth.user)
-        tenant = Tenant.objects.get(pk=request.data["full_name"])
+        tenant = Tenant.objects.get(pk=request.data["tenant_id"])
 
         payment = Payment.objects.get(pk=pk)
 
@@ -162,7 +162,7 @@ class Payments(ViewSet):
         # Find the associated lease to assign the property
         # rather than having the user select both the
         # tenant and property
-        # lease = TenantPropertyRel.objects.get(tenant=request.data["full_name"])
+        # lease = TenantPropertyRel.objects.get(tenant=request.data["tenant_id"])
         # payment.rented_property = lease.rented_property
         
         # Retrieve the payment type and attach a 
