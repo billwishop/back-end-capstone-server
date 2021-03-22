@@ -21,7 +21,7 @@ class Payments(ViewSet):
         """
         # landlord = authenticated user
         landlord = Landlord.objects.get(user=request.auth.user)
-        tenant_id = int(request.data["tenant_id"])
+        tenant_id = int(request.data["full_name"])
         tenant = Tenant.objects.get(pk=tenant_id )
         payment = Payment()
 
@@ -107,8 +107,13 @@ class Payments(ViewSet):
         # Use the values sent in the body for the range
         date_range = self.request.query_params.get('date', None)
         if date_range is not None:
-            d1 = request.data["startDate"]
-            d2 = request.data["endDate"]
+            print(date_range)
+            date_split = date_range.split('/')
+            print(date_split)
+            d1 = date_split[0]
+            d2 = date_split[1]
+            # d1 = request.data["startDate"]
+            # d2 = request.data["endDate"]
             payments = payments.filter(date__range=(d1,d2))
 
         # Specific tenant query parameter
@@ -191,6 +196,10 @@ class Payments(ViewSet):
 
         except Exception as ex:
             return Response({'message': ex.args[0]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # @action(methods=['post'], detail=True)
+    # def daterange(self, request):
+    #     """
 
 class TenantSerializer(serializers.ModelSerializer):
     """JSON serializer for tenants"""
