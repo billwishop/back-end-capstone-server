@@ -52,7 +52,7 @@ class Properties(ViewSet):
                 # Set the custom property `active` based on the lease date range
                 current_day = date.today()
                 for lease in leases:
-                    if current_day > lease.lease_start and current_day < lease.lease_end:
+                    if current_day >= lease.lease_start and current_day <= lease.lease_end:
                         lease.active = True
                     else: 
                         lease.active = False
@@ -74,6 +74,14 @@ class Properties(ViewSet):
         """
         landlord = Landlord.objects.get(user=request.auth.user)
         current_users_properties = Property.objects.filter(landlord=landlord)
+
+        search_term = self.request.query_params.get('search', None)
+        if search_term is not None:
+            current_users_properties = current_users_properties.filter(street__icontains=search_term
+            ) | current_users_properties.filter(city__icontains=search_term
+            ) | current_users_properties.filter(state__icontains=search_term
+            ) | current_users_properties.filter(postal_code__icontains=search_term
+            )
 
         serializer = PropertySerializer(
             current_users_properties, many=True, context={'request': request})
