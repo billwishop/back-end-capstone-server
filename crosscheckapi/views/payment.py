@@ -136,8 +136,8 @@ class Payments(ViewSet):
         """
         # landlord = authenticated user
         landlord = Landlord.objects.get(user=request.auth.user)
-        tenant = Tenant.objects.get(pk=request.data["tenant_id"])
-
+        tenant = Tenant.objects.get(pk=request.data["full_name"])
+        
         payment = Payment.objects.get(pk=pk)
 
         # Splitting the datetime string on the T to save the date
