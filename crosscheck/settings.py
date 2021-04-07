@@ -11,7 +11,11 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-from secret import *
+from django_key import *
+import os
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__name__))
+STATIC_ROOT = os.path.join(PROJECT_ROOT,'static/')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -60,7 +64,7 @@ REST_FRAMEWORK = {
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'http://backend-capstone-client-dev.us-east-1.elasticbeanstalk.com/'
+    # 'http://backend-capstone-client-dev.us-east-1.elasticbeanstalk.com/'
 )
 
 MIDDLEWARE = [
